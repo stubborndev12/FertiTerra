@@ -1,7 +1,5 @@
 # FertiTerra
 
-![CI](https://github.com/stubborndev12/FertiTerra/actions/workflows/ci.yml/badge.svg)
-
 A fertility care platform for Africa: education, at home testing, guided cycle tracking and access to clinicians. Built for the couples who are usually left out of the conversation.
 
 ![FertiTerra home](docs/screenshots/product-home.png)
