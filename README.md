@@ -24,11 +24,11 @@ Fertility care in Africa is expensive, urban, and quiet. Couples are told to kee
 
 ## Stack
 
-Next.js 14 (App Router), React 19, TypeScript, Tailwind CSS, Radix UI primitives, Supabase clients for data and auth, server actions, deployed on Vercel
+Next.js 14 (App Router), React 18.3, TypeScript, Tailwind CSS, Radix UI primitives, Supabase clients for data and auth, server actions, deployed on Vercel
 
 ## Running it
 
-The deployed build is a public demo. Accounts and session handling run on a seeded store (`lib/demo-store.ts`) so the patient journey works without a provisioned database. Data access in the product code goes through the Supabase clients in `lib/`; point the environment at a Supabase project to run it on live data.
+Authentication runs on Supabase Auth with cookie based sessions: server actions sign users in and out, middleware refreshes the session on each request, and the admin console checks the `profiles` role server side. Data access goes through the Supabase clients in `lib/`. Create a Supabase project, run `supabase/profiles.sql` once to provision the profile table, then set the environment variables below.
 
 ```
 cp .env.example .env.local
