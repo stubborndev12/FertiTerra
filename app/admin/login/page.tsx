@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { userStorage } from "@/lib/user-storage"
+import { adminSignInAction } from "@/actions/auth"
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("")
@@ -27,61 +27,17 @@ export default function AdminLoginPage() {
       return
     }
 
-    try {
-      // Check if user exists and is admin
-      const user = userStorage.getUser(email)
+    const form = new FormData()
+    form.set("email", email)
+    form.set("password", password)
 
-      if (!user) {
-        setMessage("Admin account not found")
-        setMessageType("error")
-        setIsLoading(false)
-        return
-      }
+    const result = await adminSignInAction(form)
 
-      if (user.password !== password) {
-        setMessage("Invalid password")
-        setMessageType("error")
-        setIsLoading(false)
-        return
-      }
-
-      if (user.role !== "admin") {
-        setMessage("Access denied. Admin privileges required.")
-        setMessageType("error")
-        setIsLoading(false)
-        return
-      }
-
-      // Successful admin login
-      setMessage("Admin login successful! Redirecting to dashboard...")
-      setMessageType("success")
-
-      // Store admin session
-      localStorage.setItem("isLoggedIn", "true")
-      localStorage.setItem("userEmail", email)
-      localStorage.setItem("userRole", "admin")
-      localStorage.setItem("adminAuthenticated", "true")
-
-      // Update last login
-      userStorage.updateLastLogin(email)
-
-      // Redirect to admin dashboard
-      setTimeout(() => {
-        window.location.href = "/admin/dashboard"
-      }, 1500)
-    } catch (error) {
-      setMessage("An error occurred during login")
+    if (result?.error) {
+      setMessage(result.error)
       setMessageType("error")
-      console.error("Admin login error:", error)
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
-  }
-
-  // Quick admin login function
-  const useAdminAccount = () => {
-    setEmail("admin@fertiterra.com")
-    setPassword("admin123")
   }
 
   return (
@@ -135,23 +91,7 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Admin Credentials Info */}
-        <div
-          style={{
-            backgroundColor: "#fef3c7",
-            padding: "0.75rem",
-            borderRadius: "8px",
-            marginBottom: "1rem",
-            fontSize: "0.875rem",
-            color: "#92400e",
-            border: "1px solid #fbbf24",
-          }}
-        >
-          <strong>Admin Credentials:</strong>
-          <br />
-          Email: admin@fertiterra.com
-          <br />
-          Password: admin123
-        </div>
+        
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -216,7 +156,6 @@ export default function AdminLoginPage() {
                 fontSize: "1rem",
                 backgroundColor: isLoading ? "#f9fafb" : "white",
                 boxSizing: "border-box",
-                borderColor: password === "admin123" ? "#10b981" : "#d1d5db",
               }}
             />
           </div>
@@ -241,24 +180,6 @@ export default function AdminLoginPage() {
             {isLoading ? "Authenticating..." : "🔐 Admin Login"}
           </button>
 
-          {/* Quick Admin Login */}
-          <button
-            type="button"
-            onClick={useAdminAccount}
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              backgroundColor: "#f3f4f6",
-              color: "#374151",
-              border: "1px solid #d1d5db",
-              borderRadius: "8px",
-              fontSize: "0.875rem",
-              cursor: "pointer",
-              transition: "background-color 0.2s",
-            }}
-          >
-            🚀 Use Admin Credentials
-          </button>
         </form>
 
         {/* Footer Links */}

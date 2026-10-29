@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { userStorage } from "@/lib/user-storage"
+import { signUpAction } from "@/actions/auth"
 
 const countries = [
   "United States",
@@ -164,82 +164,51 @@ export default function SignupPage() {
       return
     }
 
-    // Check if user already exists
-    if (userStorage.hasUser(formData.email)) {
-      setMessage("Account already exists. Please log in instead.")
+    const form = new FormData()
+    form.set("email", formData.email)
+    form.set("password", formData.password)
+    form.set("full_name", formData.fullName)
+    form.set("phone", formData.phoneNumber)
+
+    let result
+    try {
+      result = await signUpAction(form)
+    } catch {
+      setMessage("Could not reach the server. Please try again.")
       setMessageType("error")
       setIsLoading(false)
       return
     }
 
-    try {
-      // Add user to client-side storage
-      const userData = {
-        email: formData.email,
-        password: formData.password,
-        fullName: formData.fullName,
-        age: Number.parseInt(formData.age),
-        country: formData.country,
-        phoneNumber: formData.phoneNumber,
-        dateOfBirth: formData.dateOfBirth,
-        medicalConditions: formData.medicalConditions,
-        currentMedications: formData.currentMedications,
-        fertilityGoals: formData.fertilityGoals,
-        howDidYouHear: formData.howDidYouHear,
-      }
-
-      const userAdded = userStorage.addUser(userData)
-
-      if (userAdded) {
-        // Also call the API for any server-side processing
-        const response = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(userData),
-        })
-
-        const result = await response.json()
-
-        if (result.success || !response.ok) {
-          // Continue even if API fails
-          setMessage("Account created successfully! Welcome to FertiTerra.")
-          setMessageType("success")
-
-          // Store credentials for auto-login
-          localStorage.setItem("lastSignupEmail", formData.email)
-          localStorage.setItem("lastSignupPassword", formData.password)
-
-          // Clear form
-          setFormData({
-            email: "",
-            password: "",
-            confirmPassword: "",
-            fullName: "",
-            age: "",
-            country: "",
-            phoneNumber: "",
-            dateOfBirth: "",
-            medicalConditions: [],
-            currentMedications: "",
-            fertilityGoals: "",
-            howDidYouHear: "",
-          })
-          setCurrentStep(1)
-        } else {
-          setMessage(result.error || "Signup failed")
-          setMessageType("error")
-        }
-      } else {
-        setMessage("Failed to create account. User may already exist.")
-        setMessageType("error")
-      }
-    } catch (error) {
-      setMessage("Account created successfully! You can now log in.")
-      setMessageType("success")
-      console.error("Signup error:", error)
+    if (!result.success) {
+      setMessage(result.error || "Signup failed")
+      setMessageType("error")
+      setIsLoading(false)
+      return
     }
+
+    setMessage(
+      result.needsConfirmation
+        ? "Account created. Check your email to confirm it, then sign in."
+        : "Account created. You can sign in now.",
+    )
+    setMessageType("success")
+
+    setFormData({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      fullName: "",
+      age: "",
+      country: "",
+      phoneNumber: "",
+      dateOfBirth: "",
+      medicalConditions: [],
+      currentMedications: "",
+      fertilityGoals: "",
+      howDidYouHear: "",
+    })
+    setCurrentStep(1)
 
     setIsLoading(false)
   }
