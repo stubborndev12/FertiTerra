@@ -239,7 +239,6 @@ export default function UsersPage() {
                           user={user as unknown as UserProfile}
                           onRoleUpdated={(updatedUser) => {
                             // In a real app, you'd update the local state or refetch data
-                            console.log("User role updated:", updatedUser)
                           }}
                         />
                         <DropdownMenuSeparator />

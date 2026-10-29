@@ -92,7 +92,6 @@ export default function LoginPage() {
 
         // Show available accounts for debugging
         if (result.availableAccounts) {
-          console.log("Available accounts:", result.availableAccounts)
         }
       }
     } catch (error) {

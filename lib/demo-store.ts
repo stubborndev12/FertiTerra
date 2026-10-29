@@ -14,8 +14,6 @@ export const demoAccounts = {
       password,
       createdAt: new Date().toISOString(),
     })
-    console.log(`User added: ${email}`)
-    console.log(`Total users: ${this.users.size}`)
     return true
   },
 

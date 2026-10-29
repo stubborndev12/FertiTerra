@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
 
     if (tokenData.access_token) {
       // Store the access token securely (in a real app, use a database)
-      console.log("Instagram access token received:", tokenData.access_token)
 
       return NextResponse.redirect("/instagram-admin?success=connected")
     } else {

@@ -18,12 +18,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 })
     }
 
-    console.log(`Signup attempt for: ${email}`)
 
     // Send welcome email
     try {
       await emailService.sendWelcomeEmail(email)
-      console.log(`✅ Welcome email sent to: ${email}`)
     } catch (emailError) {
       console.error("Failed to send welcome email:", emailError)
       // Don't fail signup if email fails
@@ -32,7 +30,6 @@ export async function POST(request: Request) {
     // Send confirmation email
     try {
       await emailService.sendConfirmationEmail(email)
-      console.log(`✅ Confirmation email sent to: ${email}`)
     } catch (emailError) {
       console.error("Failed to send confirmation email:", emailError)
     }

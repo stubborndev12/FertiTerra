@@ -47,13 +47,6 @@ Customer will receive video call link 30 minutes before appointment.`,
     // 3. Set up video call room
     // 4. Send confirmation emails to customer
 
-    console.log("Consultation Scheduled:", {
-      consultationId,
-      date,
-      time,
-      consultationType,
-      timestamp: new Date().toISOString(),
-    })
 
     return NextResponse.json({
       success: true,

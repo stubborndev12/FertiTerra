@@ -96,12 +96,6 @@ Next Steps:
     }
 
     // Store form data (in a real app, save to database)
-    console.log("Fertility Checkup Form Submission:", {
-      timestamp: new Date().toISOString(),
-      customerEmail: formData.email,
-      customerName: `${formData.firstName} ${formData.lastName}`,
-      ...formData,
-    })
 
     return NextResponse.json({
       success: true,

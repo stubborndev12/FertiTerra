@@ -9,11 +9,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid payment amount" }, { status: 400 })
     }
 
-    console.log("Payment Processing:", {
-      amount: paymentData.amount,
-      paymentMethod: paymentData.paymentMethod,
-      timestamp: new Date().toISOString(),
-    })
 
     // Generate payment/request ID
     const paymentId = `${paymentData.paymentMethod}_${Date.now()}`
@@ -210,7 +205,6 @@ FertiTerra Technologies Team
       timestamp: new Date().toISOString(),
     }
 
-    console.log("Payment record:", paymentRecord)
 
     return NextResponse.json({
       success: true,

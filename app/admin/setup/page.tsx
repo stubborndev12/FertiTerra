@@ -50,11 +50,6 @@ export default function AdminSetupPage() {
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       setSuccess(true)
-      console.log("Admin user would be created:", {
-        email: formData.email,
-        fullName: formData.fullName,
-        role: "admin",
-      })
     } catch (err) {
       setError("Failed to create admin user")
     } finally {

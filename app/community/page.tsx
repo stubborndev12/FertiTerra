@@ -84,7 +84,6 @@ export default function CommunityPage() {
 
   const handleLike = (postId: string) => {
     // In a real app, this would update the like count in the database
-    console.log(`Liked post ${postId}`)
   }
 
   const handleJoinEvent = (eventId: string) => {
@@ -94,7 +93,6 @@ export default function CommunityPage() {
       return
     }
     // In a real app, this would register the user for the event
-    console.log(`Joined event ${eventId}`)
   }
 
   return (
@@ -281,7 +279,6 @@ export default function CommunityPage() {
                                 window.location.href = "/login?redirect=/community"
                                 return
                               }
-                              console.log(`Joined group ${group.name}`)
                             }}
                           >
                             Join Group

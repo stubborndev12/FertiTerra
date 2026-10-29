@@ -11,14 +11,11 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("hub.verify_token")
   const challenge = searchParams.get("hub.challenge")
 
-  console.log("Instagram webhook verification:", { mode, token, challenge })
 
   if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    console.log("Instagram webhook verified successfully")
     return new Response(challenge, { status: 200 })
   }
 
-  console.log("Instagram webhook verification failed")
   return new Response("Forbidden", { status: 403 })
 }
 
@@ -26,7 +23,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log("Instagram webhook received:", JSON.stringify(body, null, 2))
 
     // Process Instagram webhook events
     if (body.object === "instagram") {
@@ -52,7 +48,6 @@ async function handleInstagramMessage(messagingEvent: any) {
 
   if (message && message.text) {
     const messageText = message.text.toLowerCase()
-    console.log(`Received Instagram message from ${senderId}: ${messageText}`)
 
     // Generate response based on message content
     const responseText = await generateResponse(messageText)
@@ -116,7 +111,6 @@ async function sendInstagramMessage(recipientId: string, messageText: string) {
     })
 
     if (response.ok) {
-      console.log("Instagram message sent successfully")
     } else {
       const error = await response.text()
       console.error("Failed to send Instagram message:", error)

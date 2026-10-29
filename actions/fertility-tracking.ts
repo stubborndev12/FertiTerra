@@ -1,6 +1,7 @@
 "use server"
 
 import { createServerClient } from "@/lib/supabase-server"
+import { buildCycleInsights } from "@/lib/cycle-math"
 import { redirect } from "next/navigation"
 
 // Types for fertility tracking
@@ -384,65 +385,5 @@ export async function getFertilityInsights() {
     }
   }
 
-  // Calculate average cycle length
-  let totalDays = 0
-  const cycleLengths: number[] = []
-
-  cycles.forEach((cycle: FertilityCycle) => {
-    if (cycle.cycle_start_date && cycle.cycle_end_date) {
-      const start = new Date(cycle.cycle_start_date)
-      const end = new Date(cycle.cycle_end_date)
-      const days = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-      totalDays += days
-      cycleLengths.push(days)
-    }
-  })
-
-  const averageCycleLength = cycles.length > 0 ? Math.round(totalDays / cycles.length) : null
-
-  // Calculate cycle regularity (standard deviation)
-  let cycleRegularity = null
-  if (cycleLengths.length > 1) {
-    const mean = averageCycleLength || 0
-    const squaredDiffs = cycleLengths.map((length) => Math.pow(length - mean, 2))
-    const variance = squaredDiffs.reduce((sum, diff) => sum + diff, 0) / cycleLengths.length
-    cycleRegularity = Math.round(Math.sqrt(variance) * 10) / 10
-  }
-
-  // Estimate fertile window and next period
-  let estimatedFertileWindow = null
-  let estimatedNextPeriod = null
-
-  if (averageCycleLength && cycles[0].cycle_start_date) {
-    const lastCycleStart = new Date(cycles[0].cycle_start_date)
-
-    // Estimate next period
-    const nextPeriodDate = new Date(lastCycleStart)
-    nextPeriodDate.setDate(nextPeriodDate.getDate() + averageCycleLength)
-    estimatedNextPeriod = nextPeriodDate.toISOString().split("T")[0]
-
-    // Estimate fertile window (typically days 11-17 of a 28-day cycle, adjusted for actual cycle length)
-    const fertileStartDay = Math.max(Math.round(averageCycleLength * 0.39), 8) // At least 8 days after period starts
-    const fertileEndDay = Math.min(Math.round(averageCycleLength * 0.61), averageCycleLength - 10) // At least 10 days before next period
-
-    const fertileStartDate = new Date(lastCycleStart)
-    fertileStartDate.setDate(fertileStartDate.getDate() + fertileStartDay)
-
-    const fertileEndDate = new Date(lastCycleStart)
-    fertileEndDate.setDate(fertileEndDate.getDate() + fertileEndDay)
-
-    estimatedFertileWindow = {
-      start: fertileStartDate.toISOString().split("T")[0],
-      end: fertileEndDate.toISOString().split("T")[0],
-    }
-  }
-
-  return {
-    insights: {
-      averageCycleLength,
-      cycleRegularity,
-      estimatedFertileWindow,
-      estimatedNextPeriod,
-    },
-  }
+  return { insights: buildCycleInsights(cycles) }
 }

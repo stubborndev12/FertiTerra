@@ -254,7 +254,6 @@ export async function sendUserInvitation(email: string, role: UserRole) {
     // 2. Send an email with the invitation link
     // 3. Handle the invitation acceptance flow
 
-    console.log(`Invitation sent to ${email} for role ${role} with token ${invitationToken}`)
 
     return { error: null, token: invitationToken }
   } catch (error) {

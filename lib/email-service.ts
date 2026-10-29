@@ -231,9 +231,6 @@ The FertiTerra Team
   private async sendEmail(to: string, template: EmailTemplate): Promise<boolean> {
     try {
       // Log email details for development
-      console.log(`📧 Sending email to: ${to}`)
-      console.log(`📝 Subject: ${template.subject}`)
-      console.log(`📄 Content: ${template.text.substring(0, 100)}...`)
 
       // In production, replace this with actual email service:
       // await emailProvider.send({
@@ -246,7 +243,6 @@ The FertiTerra Team
       // Simulate email sending delay
       await new Promise((resolve) => setTimeout(resolve, 500))
 
-      console.log(`✅ Email sent successfully to: ${to}`)
       return true
     } catch (error) {
       console.error(`❌ Failed to send email to ${to}:`, error)

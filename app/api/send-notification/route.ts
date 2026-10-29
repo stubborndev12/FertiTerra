@@ -13,9 +13,6 @@ export async function POST(request: Request) {
     const { email, type, subject, message, customerEmail }: NotificationRequest = await request.json()
 
     // Log the notification for development
-    console.log(`📧 Sending ${type} notification to: ${email}`)
-    console.log(`📝 Subject: ${subject || `FertiTerra ${type} Notification`}`)
-    console.log(`📄 Message: ${message}`)
 
     // In production, integrate with email service (SendGrid, Mailgun, etc.)
     // For now, we'll simulate email sending
@@ -32,7 +29,6 @@ export async function POST(request: Request) {
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Log successful send
-    console.log(`✅ ${type} notification sent successfully to: ${email}`)
 
     // If there's a customer email, send them a copy too
     if (customerEmail && type === "consultation_scheduled") {
@@ -113,7 +109,6 @@ function generateEmailHTML(type: string, message: string, customerEmail?: string
 
 async function sendCustomerConfirmation(customerEmail: string, originalMessage: string) {
   try {
-    console.log(`📧 Sending customer confirmation to: ${customerEmail}`)
 
     // Extract appointment details from the original message
     const customerMessage = `Your consultation has been scheduled successfully!
@@ -132,7 +127,6 @@ Best regards,
 The FertiTerra Team`
 
     // In production, send actual email to customer
-    console.log(`✅ Customer confirmation prepared for: ${customerEmail}`)
   } catch (error) {
     console.error("Failed to send customer confirmation:", error)
   }

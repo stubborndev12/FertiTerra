@@ -9,8 +9,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
     }
 
-    console.log(`Login attempt for: ${email}`)
-    console.log(`Received users data:`, users ? Object.keys(users) : "No users data")
 
     // Check against provided users data (from client-side storage)
     if (users && users[email]) {

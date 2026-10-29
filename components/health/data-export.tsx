@@ -45,7 +45,6 @@ export function DataExport() {
 
     // In a real app, this would generate and download the file
     const filename = `fertility-data-${format(new Date(), "yyyy-MM-dd")}.${exportFormat}`
-    console.log(`Exporting ${filename} with options:`, exportOptions)
 
     setIsExporting(false)
   }

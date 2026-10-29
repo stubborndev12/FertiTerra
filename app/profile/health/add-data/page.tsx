@@ -58,11 +58,6 @@ export default function AddHealthDataPage() {
 
   const handleSaveData = async () => {
     // In a real app, this would save to the database
-    console.log("Saving data for", format(selectedDate, "yyyy-MM-dd"), {
-      dailyData,
-      symptoms,
-      medications,
-    })
 
     // Redirect back to health profile
     router.push("/profile/health")

@@ -5,13 +5,6 @@ export async function POST(request: Request) {
     const { email, firstName, lastName, source = "website" } = await request.json()
 
     // Log subscription for tracking
-    console.log("Newsletter Subscription:", {
-      email,
-      firstName,
-      lastName,
-      source,
-      timestamp: new Date().toISOString(),
-    })
 
     // Send notification to FertiTerra team
     await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-notification`, {

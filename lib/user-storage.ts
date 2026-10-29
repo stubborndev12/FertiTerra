@@ -73,7 +73,6 @@ export const userStorage = {
     try {
       const usersArray = Array.from(users.entries())
       localStorage.setItem("fertiterra_users", JSON.stringify(usersArray))
-      console.log("Users saved to localStorage:", usersArray.length)
     } catch (error) {
       console.error("Error saving users:", error)
     }
@@ -84,7 +83,6 @@ export const userStorage = {
     const users = this.getAllUsers()
 
     if (users.has(userData.email)) {
-      console.log("User already exists:", userData.email)
       return false
     }
 
@@ -97,8 +95,6 @@ export const userStorage = {
     users.set(userData.email, newUser)
     this.saveAllUsers(users)
 
-    console.log("User added successfully:", userData.email)
-    console.log("Total users:", users.size)
     return true
   },
 
