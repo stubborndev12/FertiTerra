@@ -4,7 +4,7 @@ A fertility care platform for Africa: education, at home testing, guided cycle t
 
 ![FertiTerra home](docs/screenshots/product-home.png)
 
-Live: https://v0-fertility-telemedicine-platform.vercel.app
+Demo walkthrough available on request.
 
 ## Why this exists
 
@@ -45,7 +45,7 @@ npm run dev
 
 ## Status
 
-Prototype built and deployed, with the core patient journey working end to end. Next: clinician onboarding, payment rails for plans, and mobile packaging.
+Working build with the core patient journey in place end to end. Next: clinician onboarding, payment rails for plans, and mobile packaging.
 
 ## Author
 
