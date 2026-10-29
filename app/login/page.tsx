@@ -2,10 +2,10 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { userStorage } from "@/lib/user-storage"
+import { signInAction } from "@/actions/auth"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -14,32 +14,12 @@ export default function LoginPage() {
   const [message, setMessage] = useState("")
   const [messageType, setMessageType] = useState<"success" | "error" | "">("")
 
-  const useTestAccount = (testEmail: string, testPassword: string) => {
-    setEmail(testEmail)
-    setPassword(testPassword)
-  }
-
-  // Load available users and auto-fill from signup
-  useEffect(() => {
-    // Auto-fill from recent signup
-    const lastEmail = localStorage.getItem("lastSignupEmail")
-    const lastPassword = localStorage.getItem("lastSignupPassword")
-    if (lastEmail && lastPassword) {
-      setEmail(lastEmail)
-      setPassword(lastPassword)
-      // Clear the stored credentials after using them
-      localStorage.removeItem("lastSignupEmail")
-      localStorage.removeItem("lastSignupPassword")
-    }
-  }, [])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setMessage("")
     setMessageType("")
 
-    // Basic validation
     if (!email || !password) {
       setMessage("Email and password are required")
       setMessageType("error")
@@ -47,57 +27,17 @@ export default function LoginPage() {
       return
     }
 
-    try {
-      // Get all users from client-side storage
-      const allUsers = userStorage.getAllUsers()
-      const usersObject = Object.fromEntries(allUsers)
+    const form = new FormData()
+    form.set("email", email)
+    form.set("password", password)
 
-      // Try to login
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          users: usersObject,
-        }),
-      })
+    // A successful sign in redirects on the server, so a returned value is
+    // always a failure worth showing.
+    const result = await signInAction(form)
 
-      const result = await response.json()
-
-      if (result.success) {
-        setMessage("Login successful! Redirecting to dashboard...")
-        setMessageType("success")
-
-        // Store login state
-        localStorage.setItem("isLoggedIn", "true")
-        localStorage.setItem("userEmail", email)
-
-        // Check if user is admin and redirect accordingly
-        const user = userStorage.getUser(email)
-        if (user?.role === "admin") {
-          setTimeout(() => {
-            window.location.href = "/admin/dashboard"
-          }, 1000)
-        } else {
-          setTimeout(() => {
-            window.location.href = "/dashboard"
-          }, 1000)
-        }
-      } else {
-        setMessage(result.error || "Login failed")
-        setMessageType("error")
-
-        // Show available accounts for debugging
-        if (result.availableAccounts) {
-        }
-      }
-    } catch (error) {
-      setMessage("Connection error. Please try again.")
+    if (result?.error) {
+      setMessage(result.error)
       setMessageType("error")
-      console.error("Login error:", error)
     }
 
     setIsLoading(false)

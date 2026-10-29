@@ -2,77 +2,66 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { userStorage, type User } from "@/lib/user-storage"
+import { getUsers } from "@/actions/user-management"
+import type { UserProfile } from "@/actions/user-management"
+import { signOutAction } from "@/actions/auth"
 
 export default function AdminDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<UserProfile[]>([])
+  const [error, setError] = useState("")
+  const [userEmail, setUserEmail] = useState("")
   const [stats, setStats] = useState({
     totalUsers: 0,
     newUsersToday: 0,
-    countries: 0,
-    averageAge: 0,
+    doctors: 0,
+    patients: 0,
   })
 
-  // Check admin authentication
   useEffect(() => {
-    const checkAuth = () => {
-      const isLoggedIn = localStorage.getItem("isLoggedIn")
-      const userRole = localStorage.getItem("userRole")
-      const adminAuth = localStorage.getItem("adminAuthenticated")
-      const userEmail = localStorage.getItem("userEmail")
+    let active = true
 
-      if (isLoggedIn === "true" && userRole === "admin" && adminAuth === "true" && userEmail) {
-        // Double-check with user storage
-        const user = userStorage.getUser(userEmail)
-        if (user && user.role === "admin") {
-          setIsAuthenticated(true)
-          loadUserData()
-        } else {
-          redirectToLogin()
-        }
-      } else {
-        redirectToLogin()
+    const load = async () => {
+      const result = await getUsers(1, 50)
+
+      if (!active) return
+
+      if (result.error) {
+        setError(result.error)
+        setIsLoading(false)
+        return
       }
+
+      const rows = result.users
+      setUserEmail("")
+      const today = new Date().toDateString()
+
+      setUsers(rows)
+      setStats({
+        totalUsers: result.total,
+        newUsersToday: rows.filter((user) => new Date(user.created_at).toDateString() === today).length,
+        doctors: rows.filter((user) => user.role === "doctor").length,
+        patients: rows.filter((user) => user.role === "patient").length,
+      })
       setIsLoading(false)
     }
 
-    checkAuth()
+    load()
+
+    return () => {
+      active = false
+    }
   }, [])
 
-  const redirectToLogin = () => {
-    window.location.href = "/admin/login"
+  const handleLogout = async () => {
+    await signOutAction()
   }
 
-  const loadUserData = () => {
-    const allUsers = Array.from(userStorage.getAllUsers().values())
-    const patientUsers = allUsers.filter((user) => user.role === "patient")
-
-    setUsers(allUsers)
-
-    // Calculate statistics
-    const today = new Date().toDateString()
-    const newUsersToday = allUsers.filter((user) => new Date(user.createdAt).toDateString() === today).length
-
-    const countries = new Set(allUsers.map((user) => user.country)).size
-    const averageAge =
-      allUsers.length > 0 ? Math.round(allUsers.reduce((sum, user) => sum + user.age, 0) / allUsers.length) : 0
-
-    setStats({
-      totalUsers: allUsers.length,
-      newUsersToday,
-      countries,
-      averageAge,
-    })
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn")
-    localStorage.removeItem("userEmail")
-    localStorage.removeItem("userRole")
-    localStorage.removeItem("adminAuthenticated")
-    window.location.href = "/admin/login"
+  const ageOf = (dateOfBirth: string | null) => {
+    if (!dateOfBirth) return "-"
+    const born = new Date(dateOfBirth)
+    const diff = Date.now() - born.getTime()
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25)).toString()
   }
 
   if (isLoading) {
@@ -104,8 +93,18 @@ export default function AdminDashboard() {
     )
   }
 
-  if (!isAuthenticated) {
-    return null // Will redirect to login
+  if (error) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ fontSize: "1.25rem", fontWeight: "600", color: "#111827" }}>Admin access required</h1>
+          <p style={{ color: "#6b7280", marginBottom: "1rem" }}>{error}</p>
+          <Link href="/admin/login" style={{ color: "#e11d48" }}>
+            Sign in as an administrator
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -126,7 +125,7 @@ export default function AdminDashboard() {
             🔐 FertiTerra Admin Dashboard
           </h1>
           <p style={{ color: "#6b7280", fontSize: "0.875rem", margin: "0.25rem 0 0 0" }}>
-            Welcome, {localStorage.getItem("userEmail")}
+            Welcome, {userEmail || "administrator"}
           </p>
         </div>
         <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
@@ -210,7 +209,7 @@ export default function AdminDashboard() {
             <h3 style={{ fontSize: "0.875rem", fontWeight: "500", color: "#6b7280", margin: "0 0 0.5rem 0" }}>
               Countries
             </h3>
-            <p style={{ fontSize: "2rem", fontWeight: "600", color: "#3b82f6", margin: 0 }}>{stats.countries}</p>
+            <p style={{ fontSize: "2rem", fontWeight: "600", color: "#3b82f6", margin: 0 }}>{stats.doctors}</p>
           </div>
 
           <div
@@ -224,7 +223,7 @@ export default function AdminDashboard() {
             <h3 style={{ fontSize: "0.875rem", fontWeight: "500", color: "#6b7280", margin: "0 0 0.5rem 0" }}>
               Average Age
             </h3>
-            <p style={{ fontSize: "2rem", fontWeight: "600", color: "#f59e0b", margin: 0 }}>{stats.averageAge}</p>
+            <p style={{ fontSize: "2rem", fontWeight: "600", color: "#f59e0b", margin: 0 }}>{stats.patients}</p>
           </div>
         </div>
 
@@ -318,10 +317,10 @@ export default function AdminDashboard() {
               <tbody>
                 {users.map((user, index) => (
                   <tr key={user.email} style={{ borderBottom: "1px solid #e5e7eb" }}>
-                    <td style={{ padding: "0.75rem", fontSize: "0.875rem", color: "#111827" }}>{user.fullName}</td>
+                    <td style={{ padding: "0.75rem", fontSize: "0.875rem", color: "#111827" }}>{user.full_name ?? "-"}</td>
                     <td style={{ padding: "0.75rem", fontSize: "0.875rem", color: "#111827" }}>{user.email}</td>
-                    <td style={{ padding: "0.75rem", fontSize: "0.875rem", color: "#111827" }}>{user.age}</td>
-                    <td style={{ padding: "0.75rem", fontSize: "0.875rem", color: "#111827" }}>{user.country}</td>
+                    <td style={{ padding: "0.75rem", fontSize: "0.875rem", color: "#111827" }}>{ageOf(user.date_of_birth)}</td>
+                    <td style={{ padding: "0.75rem", fontSize: "0.875rem", color: "#111827" }}>{user.phone ?? "-"}</td>
                     <td style={{ padding: "0.75rem", fontSize: "0.875rem" }}>
                       <span
                         style={{
@@ -337,7 +336,7 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td style={{ padding: "0.75rem", fontSize: "0.875rem", color: "#6b7280" }}>
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {new Date(user.created_at).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}

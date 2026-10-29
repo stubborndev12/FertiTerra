@@ -1,32 +1,25 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
+import { useAuth } from "@/context/auth-context"
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<{ email: string } | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is logged in
-    const isLoggedIn = localStorage.getItem("isLoggedIn")
-    const userEmail = localStorage.getItem("userEmail")
-
-    if (!isLoggedIn || !userEmail) {
+    if (!authLoading && !user) {
       router.push("/login")
-      return
     }
+  }, [authLoading, user, router])
 
-    setUser({ email: userEmail })
-    setIsLoading(false)
-  }, [router])
+  const isLoading = authLoading
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn")
-    localStorage.removeItem("userEmail")
+  const handleLogout = async () => {
+    await signOut()
     router.push("/")
   }
 
@@ -128,7 +121,7 @@ export default function DashboardPage() {
                   fontWeight: "500",
                 }}
               >
-                {user.email.charAt(0).toUpperCase()}
+                {user?.email?.charAt(0).toUpperCase() ?? ""}
               </div>
               <button
                 onClick={handleLogout}
@@ -154,7 +147,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div style={{ marginBottom: "2rem" }}>
           <h1 style={{ fontSize: "2rem", fontWeight: "700", color: "#111827", marginBottom: "0.5rem" }}>
-            Welcome back, {user.email.split("@")[0]}! 🌸
+            Welcome back, {user?.email?.split("@")[0] ?? "there"}! 🌸
           </h1>
           <p style={{ color: "#6b7280", fontSize: "1.125rem" }}>
             Track your fertility journey and connect with healthcare professionals.
